@@ -46,18 +46,22 @@ def process_command(command, pixels):
         pixels[x][y] = pygame.Color(*map(int, color.split('-')))
     return pixels
 
-# display loop
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    
-    # get serial input
-    if ser.in_waiting > 0:
-        command = ser.readline().decode().strip().split(',')
-        pixels = process_command(command, pixels)
+def main():
+    # display loop
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        
+        # get serial input
+        if ser.in_waiting > 0:
+            command = ser.readline().decode().strip().split(',')
+            pixels = process_command(command, pixels)
 
-    draw_pixels(screen, pixels, pixel_size)
+        draw_pixels(screen, pixels, pixel_size)
 
-pygame.quit()
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
