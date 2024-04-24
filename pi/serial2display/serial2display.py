@@ -25,7 +25,7 @@ WHITE = (255, 255, 255)
 pixels = [[BLACK for _ in range(grid_height)] for _ in range(grid_width)] 
 
 # serial setup
-ser = serial.Serial('/dev/ttyUSB0', 9600)  # linux
+ser = serial.Serial('/dev/ttyACM0', 9600)  # linux
 #ser = serial.Serial('COM3', 9600) # windows
 
 # draw pixels
