@@ -62,7 +62,7 @@ def main():
         
         # get serial input
         if ser.in_waiting > 0:
-            command = ser.readline().decode().strip().split(',')
+            command = ser.readline().decode('windows-1252').strip().split(',')
             pixels = process_command(command, pixels)
 
         draw_pixels(screen, pixels, pixel_size, grid_width, grid_height)
