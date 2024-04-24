@@ -7,29 +7,33 @@ this python file is used to get serial input from the pi and output to a grid of
 # setup
 import pygame
 import serial
-pygame.init()
 
-# "screen" setup
-grid_width = 48
-grid_height = 32
-pixel_size = 20
-width, height = grid_width * pixel_size, grid_height * pixel_size
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Survive!")
+def game_setup():
+    pygame.init()
 
-# colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
+    # "screen" setup
+    grid_width = 48
+    grid_height = 32
+    pixel_size = 20
+    width, height = grid_width * pixel_size, grid_height * pixel_size
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption("Survive!")
 
-# build grid
-pixels = [[BLACK for _ in range(grid_height)] for _ in range(grid_width)] 
+    # colors
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
 
-# serial setup
-ser = serial.Serial('/dev/ttyACM0', 9600)  # linux
-#ser = serial.Serial('COM3', 9600) # windows
+    # build grid
+    pixels = [[BLACK for _ in range(grid_height)] for _ in range(grid_width)] 
+
+    # serial setup
+    ser = serial.Serial('/dev/ttyACM0', 9600)  # linux
+    #ser = serial.Serial('COM3', 9600) # windows
+
+    return screen, pixels, pixel_size, ser, grid_width, grid_height
 
 # draw pixels
-def draw_pixels(screen, pixels, pixel_size):
+def draw_pixels(screen, pixels, pixel_size, grid_width, grid_height):
     for x in range(grid_width):
         for y in range(grid_height):
             pygame.draw.rect(screen, pixels[x][y], (x * pixel_size, y * pixel_size, pixel_size, pixel_size))
@@ -47,6 +51,8 @@ def process_command(command, pixels):
     return pixels
 
 def main():
+    screen, pixels, pixel_size, ser, grid_width, grid_height = game_setup()
+
     # display loop
     running = True
     while running:
@@ -59,7 +65,7 @@ def main():
             command = ser.readline().decode().strip().split(',')
             pixels = process_command(command, pixels)
 
-        draw_pixels(screen, pixels, pixel_size)
+        draw_pixels(screen, pixels, pixel_size, grid_width, grid_height)
 
     pygame.quit()
 
