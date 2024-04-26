@@ -11,6 +11,7 @@ const int swPin = 2;
 
 // buttons
 const int thrustPin = 3;
+const int firePin = 5;
 
 /* -------------------- game setup -------------------- */
 Game game(GRID_WIDTH, GRID_HEIGHT);
@@ -60,6 +61,10 @@ void checkButtons() {
   if (digitalRead(thrustPin) == 0) {
     player.thrust();
   }
+
+  if (digitalRead(firePin) == 0) {
+    fire();
+  }
 }
 
 /* -------------------- player display -------------------- */
@@ -71,10 +76,8 @@ void printPlayer(bool show) {
   int startY = player.y - PLAYER_SIZE / 2;
   pixelsToUpdate[0] = '\0';
   int (*playerArt)[PLAYER_SIZE][PLAYER_SIZE] = player.getArt();
-  //int (*playerArt)[PLAYER_SIZE][PLAYER_SIZE] = &playerArtRight;
   for (int i = 0; i < PLAYER_SIZE; ++i) {
     for (int j = 0; j < PLAYER_SIZE; ++j) {
-      //if (player.getArt()[j][i] == 1) {
       if ((*playerArt)[j][i] == 1) {
         char pixelUpdate[28];
         if (!show) { // clear
@@ -87,8 +90,93 @@ void printPlayer(bool show) {
     }
   }
   pixelsToUpdate[sizeof(pixelsToUpdate) - 1] = '\0'; // null termination 
+  game.tick();
   Serial.println(pixelsToUpdate);
-  Serial.flush();
+  //Serial.flush();
+}
+
+// player firing
+void fire() {
+  int posX = player.x;
+  int posY = player.y;
+  int dirX = 0;
+  int dirY = 0;
+
+  switch (player.direction) {
+    case DIRECTION_UP:
+      dirY = -1;
+      break;
+    case DIRECTION_DOWN:
+      dirY = 1;
+      break;
+    case DIRECTION_LEFT:
+      dirX = -1;
+      break;
+    case DIRECTION_RIGHT:
+      dirX = 1;
+      break;
+    case DIRECTION_UP_LEFT:
+      dirX = -1;
+      dirY = -1;
+      break;
+    case DIRECTION_UP_RIGHT:
+      dirX = 1;
+      dirY = -1;
+      break;
+    case DIRECTION_DOWN_LEFT:
+      dirX = -1;
+      dirY = 1;
+      break;
+    case DIRECTION_DOWN_RIGHT:
+      dirX = 1;
+      dirY = 1;
+      break;
+    default:
+      break;
+  }
+
+  int stepCounter = 0;
+  while (posX >= 0 && posX < GRID_WIDTH && posY >= 0 && posY < GRID_HEIGHT) {
+    // check if fire hit rock
+    for (int i = 0; i < game.numRocks; i++) {
+      Rock& rock = game.rocks[i];
+      int distanceX = abs(rock.x - posX);
+      int distanceY = abs(rock.y - posY);
+      if (distanceX <= 2 && distanceY <= 2) {
+        // hit
+        // remove the rock from the array
+        game.removeRock(i);
+        break;
+      }
+    }
+
+    // print the laser pixel
+    if (stepCounter % 2 == 0) {
+      char pixelUpdate[28];
+      sprintf(pixelUpdate, "PIXEL,%d,%d,255-0-0\n", posX, posY);
+      Serial.println(pixelUpdate);
+    }
+
+    // move the laser one step
+    posX += dirX;
+    posY += dirY;
+    stepCounter++;
+  }
+
+  // clear the laser path
+  posX = player.x;
+  posY = player.y;
+  stepCounter = 0;
+  while (posX >= 0 && posX < GRID_WIDTH && posY >= 0 && posY < GRID_HEIGHT) {
+    if (stepCounter % 2 == 0) {
+      char pixelUpdate[28];
+      sprintf(pixelUpdate, "PIXEL,%d,%d,0-0-0\n", posX, posY);
+      Serial.println(pixelUpdate);
+    }
+    posX += dirX;
+    posY += dirY;
+    stepCounter++;
+  }
 }
 
 /* -------------------- running -------------------- */
@@ -96,6 +184,7 @@ void printPlayer(bool show) {
 void setup() {
   pinMode(swPin, INPUT_PULLUP); 
   pinMode(thrustPin, INPUT_PULLUP); 
+  pinMode(firePin, INPUT_PULLUP);
   Serial.begin(9600);
   delay(100);
   printPlayer(true);
@@ -111,11 +200,13 @@ void loop() {
   // game updates
     // if moving
   if (player.velocityX != 0 or player.velocityY != 0) {
+    //Serial.println("test1");
     printPlayer(false);
     player.move();
     player.decelerate();
     printPlayer(true);
   }
     // game timer stuff
+    //Serial.println("test2");
   game.tick();
 }

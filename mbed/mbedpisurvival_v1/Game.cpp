@@ -6,6 +6,8 @@ Game::Game(int gameWidth, int gameHeight) {
   score = 0;
   health = 100;
   timeElapsed = 0;
+  starX = -1;
+  starY = -1;
   Serial.println("----");
 
   /*// init grid of pixels
@@ -20,7 +22,9 @@ Game::Game(int gameWidth, int gameHeight) {
 
 void Game::tick() {
   timeElapsed = timeElapsed + 1;
-  if (timeElapsed % 500 == 0) {
+  //Serial.println(timeElapsed);
+
+  if (timeElapsed % 1000 == 0) {
     if (numRocks < MAX_ROCKS) {
       spawnRock();
     }
@@ -34,6 +38,22 @@ void Game::tick() {
       printRock(i, true);
     }
   }
+
+  if (timeElapsed % 300 == 0) {
+    updateStar();
+  }
+}
+
+void Game::updateStar() {
+    // clear the previous star
+    if (starX != -1 && starY != -1) {
+        updatePixel(starX, starY, "0-0-0");
+    }
+
+    // rng star
+    starX = random(width);
+    starY = random(height);
+    updatePixel(starX, starY, "255-255-255");
 }
 
 void Game::spawnRock() {
@@ -59,12 +79,25 @@ void Game::printRock(int index, bool show) {
       
       // output to pixel
       if (show) {
-        updatePixel(pixelX, pixelY, "255-255-255");
+        updatePixel(pixelX, pixelY, "139-69-19");
       } else {
         updatePixel(pixelX, pixelY, "0-0-0");
       }
     }
   }
+}
+
+void Game::removeRock(int index) {
+  // clearrock
+  printRock(index, false);
+
+  // shift all rocks after the removed one to the left
+  for (int i = index; i < numRocks - 1; i++) {
+    rocks[i] = rocks[i + 1];
+  }
+  numRocks--;
+
+  score += 100;
 }
 
 void Game::updateGameState() {
