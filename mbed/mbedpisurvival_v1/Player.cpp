@@ -187,17 +187,17 @@ int (*Player::getArt())[PLAYER_SIZE][PLAYER_SIZE] {
   if (direction == DIRECTION_UP_RIGHT) {
     //Serial.println("return upright");
     art = upright;
-    return right;
+    return upright;
   } 
   if (direction == DIRECTION_DOWN_LEFT) {
     //Serial.println("return downleft");
     art = downleft;
-    return left;
+    return downleft;
   } 
   if (direction == DIRECTION_DOWN_RIGHT) {
     //Serial.println("return downright");
     art = downright;
-    return right;
+    return downright;
   }
 
   return up;

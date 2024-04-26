@@ -88,8 +88,8 @@ void printPlayer(bool show) {
   }
   pixelsToUpdate[sizeof(pixelsToUpdate) - 1] = '\0'; // null termination 
   Serial.println(pixelsToUpdate);
+  Serial.flush();
 }
-
 
 /* -------------------- running -------------------- */
 
@@ -109,16 +109,13 @@ void loop() {
   checkButtons();
 
   // game updates
-  
-  // if moving
+    // if moving
   if (player.velocityX != 0 or player.velocityY != 0) {
     printPlayer(false);
     player.move();
     player.decelerate();
-    //Serial.println("playermoved");
     printPlayer(true);
   }
-
+    // game timer stuff
   game.tick();
-  //Serial.println("hey");
 }

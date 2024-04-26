@@ -8,21 +8,64 @@ Game::Game(int gameWidth, int gameHeight) {
   timeElapsed = 0;
   Serial.println("----");
 
-  // init grid of pixels
+  /*// init grid of pixels
   grid = new Pixel*[width];
   for (int x = 0; x < width; x++) {
     grid[x] = new Pixel[height];
     for (int y = 0; y < height; y++) {
       grid[x][y] = Pixel(x, y, "0-0-0");
     }
-  }
-  //Serial.println("hello 2");
+  }*/
 }
 
 void Game::tick() {
   timeElapsed = timeElapsed + 1;
+  if (timeElapsed % 500 == 0) {
+    if (numRocks < MAX_ROCKS) {
+      spawnRock();
+    }
+  }
+
+  if (timeElapsed % 100 == 0) {
+    // move rocks
+    for (int i = 0; i < numRocks; i++) {
+      printRock(i, false);
+      rocks[i].updatePosition();
+      printRock(i, true);
+    }
+  }
 }
 
+void Game::spawnRock() {
+  // rng for new rock
+  int initialX = random(GRID_WIDTH);
+  int initialY = random(GRID_HEIGHT);
+  int initialVelocityX = random(-5, 6); 
+  int initialVelocityY = random(-5, 6);
+
+  // build rock
+  if (numRocks < MAX_ROCKS) {
+    rocks[numRocks++] = Rock(initialX, initialY, initialVelocityX, initialVelocityY);
+  }
+}
+
+void Game::printRock(int index, bool show) {
+  Rock& rock = rocks[index];
+  // 2x2 grid for rock
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 2; ++j) {
+      int pixelX = rock.x + i;
+      int pixelY = rock.y + j;
+      
+      // output to pixel
+      if (show) {
+        updatePixel(pixelX, pixelY, "255-255-255");
+      } else {
+        updatePixel(pixelX, pixelY, "0-0-0");
+      }
+    }
+  }
+}
 
 void Game::updateGameState() {
   // update
@@ -32,7 +75,7 @@ void Game::updatePixel(int x, int y, const char* newColor) {
   // check boundaries
   if (x >= 0 && x < width && y >= 0 && y < height) {
     // update color
-    grid[x][y].changeColor(newColor);
+    //grid[x][y].changeColor(newColor);
     sendPixelUpdate(x, y, newColor);
   }
 }
@@ -50,7 +93,7 @@ void Game::sendPixelUpdate(int x, int y, const char* color) {
 Game::~Game() {
   // memory cleanup
   for (int x = 0; x < width; x++) {
-    delete[] grid[x];
+    //delete[] grid[x];
   }
-  delete[] grid;
+  //delete[] grid;
 }
