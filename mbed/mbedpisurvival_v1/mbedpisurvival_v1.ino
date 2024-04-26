@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "Game.h"
 #include "Pixel.h"
+//#include <LiquidCrystal.h>
 
 /* -------------------- io pins -------------------- */
 // joystick
@@ -17,6 +18,25 @@ const int firePin = 5;
 Game game(GRID_WIDTH, GRID_HEIGHT);
 Player player(GRID_WIDTH / 2, GRID_HEIGHT / 2);
 int previousDirection = DIRECTION_UP;
+
+bool running = false;
+bool notStarted = true;
+
+void resetGame() {
+  // clear
+    // rock
+  for (int i = 0; i < game.numRocks; i++) {
+    game.printRock(i, false);
+  }
+    // star
+  game.sendPixelUpdate(game.starX, game.starY, "0-0-0");
+
+  running = false;
+  notStarted = true;
+  int previousDirection = DIRECTION_UP;
+  player = Player(GRID_WIDTH / 2, GRID_HEIGHT / 2);
+  game = Game(GRID_WIDTH, GRID_HEIGHT);
+}
 
 /* -------------------- inputs -------------------- */
 void readJoystick() {
@@ -90,7 +110,7 @@ void printPlayer(bool show) {
     }
   }
   pixelsToUpdate[sizeof(pixelsToUpdate) - 1] = '\0'; // null termination 
-  game.tick();
+  game.tick(player.x, player.y);
   Serial.println(pixelsToUpdate);
   //Serial.flush();
 }
@@ -187,26 +207,64 @@ void setup() {
   pinMode(firePin, INPUT_PULLUP);
   Serial.begin(9600);
   delay(100);
-  printPlayer(true);
+  //printPlayer(true);
   //Serial.println("setup");
 }
 
 void loop() {
-  //Serial.println("hey");
-  // inputs
-  readJoystick();
-  checkButtons();
+  /** gameplay **/
+  while (running) {
+    // inputs
+    readJoystick();
+    checkButtons();
 
-  // game updates
-    // if moving
-  if (player.velocityX != 0 or player.velocityY != 0) {
-    //Serial.println("test1");
-    printPlayer(false);
-    player.move();
-    player.decelerate();
-    printPlayer(true);
+    // game updates
+      // if moving
+    if (player.velocityX != 0 or player.velocityY != 0) {
+      printPlayer(false);
+      player.move();
+      player.decelerate();
+      printPlayer(true);
+    }
+      // game timer stuff
+    game.tick(player.x, player.y);
+
+    if (game.collision) {
+      running = false;
+    }
   }
-    // game timer stuff
-    //Serial.println("test2");
-  game.tick();
+
+  if(notStarted) {
+    // game hasnt started, waiting for thrust button
+    if (digitalRead(thrustPin) == 0) {
+      // startup routine
+      notStarted = false;
+      running = true;
+      printPlayer(true);
+      delay(400);
+      printPlayer(false);
+      delay(400);
+      printPlayer(true);
+      delay(400);
+      printPlayer(false);
+      delay(400);
+      printPlayer(true);
+      delay(1000);
+    }
+  } else {
+    // end game routine
+    printPlayer(true);
+    delay(400);
+    printPlayer(false);
+    delay(400);
+    printPlayer(true);
+    delay(400);
+    printPlayer(false);
+    delay(400);
+    printPlayer(true);
+    delay(400);
+    printPlayer(false);
+    delay(1000);
+    resetGame();
+  }
 }

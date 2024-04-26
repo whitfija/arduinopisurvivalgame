@@ -20,11 +20,11 @@ Game::Game(int gameWidth, int gameHeight) {
   }*/
 }
 
-void Game::tick() {
+void Game::tick(int playerX, int playerY) {
   timeElapsed = timeElapsed + 1;
   //Serial.println(timeElapsed);
 
-  if (timeElapsed % 1000 == 0) {
+  if (timeElapsed % 800 == 0) {
     if (numRocks < MAX_ROCKS) {
       spawnRock();
     }
@@ -32,15 +32,29 @@ void Game::tick() {
 
   if (timeElapsed % 100 == 0) {
     // move rocks
-    for (int i = 0; i < numRocks; i++) {
-      printRock(i, false);
-      rocks[i].updatePosition();
-      printRock(i, true);
-    }
+    moveNextRock(playerX, playerY);
   }
 
   if (timeElapsed % 300 == 0) {
     updateStar();
+  }
+}
+
+void Game::moveNextRock(int playerX, int playerY) {
+  if (numRocks > 0) {
+    currentRockIndex = (currentRockIndex + 1) % numRocks;
+
+    // move the current rock
+    printRock(currentRockIndex, false);
+    rocks[currentRockIndex].updatePosition();
+    printRock(currentRockIndex, true);
+
+    // check for collision with player
+    int distanceX = abs(rocks[currentRockIndex].x - playerX);
+    int distanceY = abs(rocks[currentRockIndex].y - playerY);
+    if (distanceX <= 4 && distanceY <= 4) {
+      collision = true;
+    }
   }
 }
 

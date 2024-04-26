@@ -5,8 +5,9 @@
 #include <Arduino.h>
 #include "Constants.h"
 #include "Rock.h"
+#include "Player.h"
 
-#define MAX_ROCKS 5
+#define MAX_ROCKS 7
 
 class Game {
   public:
@@ -21,6 +22,8 @@ class Game {
 
     Rock rocks[MAX_ROCKS];
     int numRocks = 0;
+    bool collision = false;
+    int currentRockIndex = 0;
 
     //Pixel** grid; // pointer instead of actual array for memory reasons
 
@@ -28,10 +31,11 @@ class Game {
     void spawnRock();
     void printRock(int index, bool show);
     void removeRock(int index);
+    void moveNextRock(int playerX, int playerY);
     void updateGameState();
     void updatePixel(int x, int y, const char* newColor);
     void sendPixelUpdate(int x, int y, const char* color);
-    void tick();
+    void tick(int playerX, int playerY);
     void updateStar();
     ~Game();
 };
