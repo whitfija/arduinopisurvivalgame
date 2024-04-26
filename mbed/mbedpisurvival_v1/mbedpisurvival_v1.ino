@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "Game.h"
 #include "Pixel.h"
-//#include <LiquidCrystal.h>
+#include <LiquidCrystal.h>
 
 /* -------------------- io pins -------------------- */
 // joystick
@@ -13,6 +13,16 @@ const int swPin = 2;
 // buttons
 const int thrustPin = 3;
 const int firePin = 5;
+
+/*// lcd
+#define LCD_RS  A8
+#define LCD_EN  A9
+#define LCD_D4  A10
+#define LCD_D5  A11
+#define LCD_D6  A12
+#define LCD_D7  A13
+LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+*/
 
 /* -------------------- game setup -------------------- */
 Game game(GRID_WIDTH, GRID_HEIGHT);
@@ -202,9 +212,16 @@ void fire() {
 /* -------------------- running -------------------- */
 
 void setup() {
+  // inputs
   pinMode(swPin, INPUT_PULLUP); 
   pinMode(thrustPin, INPUT_PULLUP); 
   pinMode(firePin, INPUT_PULLUP);
+
+  // output
+  // lcd
+  //lcd.begin(16, 2);
+  //lcd.print("hello, world!");
+
   Serial.begin(9600);
   delay(100);
   //printPlayer(true);
@@ -214,6 +231,9 @@ void setup() {
 void loop() {
   /** gameplay **/
   while (running) {
+    //lcd.begin(16, 2);
+    //lcd.print("hello, world!");
+
     // inputs
     readJoystick();
     checkButtons();
